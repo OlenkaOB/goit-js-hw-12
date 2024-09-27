@@ -3,11 +3,11 @@ import 'izitoast/dist/css/iziToast.min.css';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { createGalleryMarkup } from './js/render-functions';
-import { PER_PAGE, fetchNews } from './js/pixabay-api';
+import { perPage, fetchCard } from './js/pixabay-api';
 
 const form = document.querySelector('form.js-search-form');
 const gallery = document.querySelector('.gallery');
-const btnLoader = document.querySelector('.btn-loader');
+const btnLoader = document.querySelector('button.btn-loader');
 
 let currentPage = 1;
 let query = null;
@@ -30,14 +30,14 @@ function hideLoader() {
 
 async function onButtonSubmit(event) {
   event.preventDefault();
-  currentPage = 1;
   btnLoader.style.display = 'none';
+  currentPage = 1;
   showLoader();
 
-  const form = event.currentTarget;
+  const forma = event.currentTarget;
   const {
     searchValue: { value: query },
-  } = form.elements;
+  } = forma.elements;
   console.log(query);
 
   if (query === '') {
@@ -50,8 +50,9 @@ async function onButtonSubmit(event) {
     return;
   }
   gallery.innerHTML = '';
+
   try {
-    const photos = await fetchNews(query);
+    const photos = await fetchCard(query);
     if (!photos.hits || photos.hits.length === 0) {
       iziToast.show({
         title: '❌',
@@ -61,9 +62,8 @@ async function onButtonSubmit(event) {
       });
       return;
     }
-
+    console.log(photos);
     gallery.insertAdjacentHTML('beforeend', createGalleryMarkup(photos.hits));
-    handleScrollView();
     showBox.refresh();
     if (photos.totalHits > 15) {
       btnLoader.style.display = 'block';
@@ -80,9 +80,9 @@ async function btnLoaderClick() {
   try {
     showLoader();
     currentPage += 1;
-    const photos = await queryFunction(query, currentPage);
+    const photos = await fetchCard(query, currentPage);
     console.log(currentPage);
-    let totalPages = Math.ceil(photos.totalHits / PER_PAGE);
+    let totalPages = Math.ceil(photos.totalHits / perPage);
     console.log(totalPages);
 
     if (currentPage >= totalPages) {
