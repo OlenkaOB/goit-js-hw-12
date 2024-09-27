@@ -2,13 +2,15 @@ import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import { API_KEY, BASE_URL } from './js/pixabay-api';
 import { createGalleryMarkup } from './js/render-functions';
+import { PER_PAGE, fetchNews } from './js/pixabay-api';
 
 const form = document.querySelector('form.js-search-form');
 const gallery = document.querySelector('.gallery');
+const btnLoader = document.querySelector('.btn-loader');
 
-form.addEventListener('submit', onButtonSubmit);
+let currentPage = 1;
+let query = null;
 
 const showBox = new SimpleLightbox('.galleryEl a', {
   captions: true,
@@ -26,14 +28,16 @@ function hideLoader() {
   document.getElementById('loader').style.display = 'none';
 }
 
-function onButtonSubmit(event) {
+async function onButtonSubmit(event) {
   event.preventDefault();
+  currentPage = 1;
+  btnLoader.style.display = 'none';
   showLoader();
 
-  const forma = event.currentTarget;
+  const form = event.currentTarget;
   const {
     searchValue: { value: query },
-  } = forma.elements;
+  } = form.elements;
   console.log(query);
 
   if (query === '') {
@@ -45,44 +49,72 @@ function onButtonSubmit(event) {
     hideLoader();
     return;
   }
-
-  const options = {
-    key: API_KEY,
-    q: query,
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: 'true',
-  };
-
-  const params = new URLSearchParams(options);
-  console.log(params.toString());
-
   gallery.innerHTML = '';
+  try {
+    const photos = await fetchNews(query);
+    if (!photos.hits || photos.hits.length === 0) {
+      iziToast.show({
+        title: '❌',
+        message: `"Sorry, there are no images matching your search query. Please try again!"`,
+        position: 'topRight',
+        color: 'red',
+      });
+      return;
+    }
 
-  fetch(`${BASE_URL}api/?${params}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.status);
-      }
-      return response.json();
-    })
-    .then(photos => {
-      if (!photos.hits || photos.hits.length === 0) {
-        iziToast.show({
-          title: '❌',
-          message: `"Sorry, there are no images matching your search query. Please try again!"`,
-          position: 'topRight',
-          color: 'red',
-        });
-        return;
-      }
-      console.log(photos);
-      gallery.insertAdjacentHTML('beforeend', createGalleryMarkup(photos.hits));
-      showBox.refresh();
-    })
-
-    .catch(error => console.log(error))
-    .finally(() => {
-      hideLoader();
-    });
+    gallery.insertAdjacentHTML('beforeend', createGalleryMarkup(photos.hits));
+    handleScrollView();
+    showBox.refresh();
+    if (photos.totalHits > 15) {
+      btnLoader.style.display = 'block';
+    }
+    return query;
+  } catch (error) {
+    console.log(error);
+  } finally {
+    hideLoader();
+  }
 }
+
+async function btnLoaderClick() {
+  try {
+    showLoader();
+    currentPage += 1;
+    const photos = await queryFunction(query, currentPage);
+    console.log(currentPage);
+    let totalPages = Math.ceil(photos.totalHits / PER_PAGE);
+    console.log(totalPages);
+
+    if (currentPage >= totalPages) {
+      btnLoader.style.display = 'none';
+      iziToast.show({
+        title: '❌',
+        message: `"We're sorry, but you've reached the end of search results."`,
+        position: 'bottomCenter',
+        color: 'blue',
+      });
+    }
+    gallery.insertAdjacentHTML('beforeend', createGalleryMarkup(photos.hits));
+    handleScrollView();
+    showBox.refresh();
+  } catch (error) {
+    console.log(error);
+  } finally {
+    hideLoader();
+  }
+}
+
+function handleScrollView() {
+  const lastArticle = gallery.lastElementChild;
+  const articleHeight = lastArticle.getBoundingClientRect().height;
+  const scrollHeight = articleHeight * 2;
+
+  window.scrollBy({
+    top: scrollHeight,
+    left: 0,
+    behavior: 'smooth',
+  });
+}
+
+btnLoader.addEventListener('click', btnLoaderClick);
+form.addEventListener('submit', onButtonSubmit);

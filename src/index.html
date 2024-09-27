@@ -15,6 +15,7 @@
         class="search-input"
         placeholder="Search images ..."
         name="searchValue"
+        required
       />
       <button type="submit" class="btn">Search</button>
     </form>
@@ -22,8 +23,16 @@
     <div id="loader" class="loader" style="display: none">
       <p>Loading ...</p>
     </div>
+   
 
     <ul class="gallery">
+
+
+    <div class="loader-more">
+      <button class="btn-loader" type="submit">
+        <span class="span-loader">Load more</span>
+      </button>
+    </div>
    
     <script type="module" src="./main.js"></script>
   
