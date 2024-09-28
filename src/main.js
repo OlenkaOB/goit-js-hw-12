@@ -79,9 +79,8 @@ async function btnLoaderClick() {
     showLoader();
     currentPage += 1;
     const photos = await fetchCard(query, currentPage);
-    // console.log(currentPage);
+
     let totalPages = Math.ceil(photos.totalHits / perPage);
-    // console.log(totalPages);
 
     if (currentPage >= totalPages) {
       btnLoader.style.display = 'none';
