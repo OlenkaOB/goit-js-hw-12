@@ -60,7 +60,7 @@ async function onButtonSubmit(event) {
       });
       return;
     }
-    console.log(photos);
+
     gallery.insertAdjacentHTML('beforeend', createGalleryMarkup(photos.hits));
     showBox.refresh();
     if (photos.totalHits > 15) {

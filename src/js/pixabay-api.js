@@ -20,7 +20,7 @@ export async function fetchCard(query, currentPage) {
 
   try {
     const response = await axios.get(`${BASE_URL}api/?${params}`);
-    console.log(response.data);
+
     return response.data;
   } catch (error) {
     console.error(error);
