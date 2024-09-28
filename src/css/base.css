@@ -117,6 +117,17 @@ button:hover {
 }
 
 .btn-loader {
+  display: none;
+  margin: auto;
+  margin-top: 20px;
+  margin-bottom: 30px;
   width: 125px;
   height: 40px;
+}
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 32px;
 }
