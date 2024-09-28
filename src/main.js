@@ -35,10 +35,8 @@ async function onButtonSubmit(event) {
   showLoader();
 
   const forma = event.currentTarget;
-  const {
-    searchValue: { value: query },
-  } = forma.elements;
-  console.log(query);
+
+  query = forma.elements.searchValue.value.trim();
 
   if (query === '') {
     iziToast.show({
